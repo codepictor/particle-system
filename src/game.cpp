@@ -10,42 +10,42 @@ Game::Game()
     : main_window_("Particle system", WINDOW_SIZES)
 {
     ParticleSystem::ParticleID particle1_id = particle_system_.AddParticle(
-        sf::Vector2f(WINDOW_SIZES.x / 10.0f, WINDOW_SIZES.y / 10.0f),  // position
+        sf::Vector2f(50.0f, 450.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
         25.0f,  // radius
-        520.0f  // mass
+        15000.0f  // mass
     );
 
     ParticleSystem::ParticleID particle2_id = particle_system_.AddParticle(
-        sf::Vector2f(WINDOW_SIZES.x / 8.0f, WINDOW_SIZES.y / 4.0f),  // position
+        sf::Vector2f(400.0f, 100.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
-        45.0f,  // radius
-        910.0f  // mass
+        25.0f,  // radius
+        15000.0f  // mass
     );
 
     ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
-        sf::Vector2f(WINDOW_SIZES.x / 1.2f, WINDOW_SIZES.y / 1.5f),  // position
+        sf::Vector2f(750.0f, 450.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
-        15.0f,  // radius
-        200.0f  // mass
+        25.0f,  // radius
+        15000.0f  // mass
     );
 
     particle_system_.AddLink(
         particle1_id, particle2_id,
-        8000.0f  // stiffness
+        1e6  // stiffness
     );
 
     particle_system_.AddLink(
         particle2_id, particle3_id,
-        5500.0f  // stiffness
+        1e6  // stiffness
     );
 
     particle_system_.AddLink(
         particle1_id, particle3_id,
-        9500.0f  // stiffness
+        1e6  // stiffness
     );
 }
 
