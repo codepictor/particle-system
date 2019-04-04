@@ -1,0 +1,127 @@
+#include "game.h"
+
+
+
+extern const sf::Vector2u WINDOW_SIZES(800, 600);
+
+
+
+Game::Game()
+    : main_window_("Particle system", WINDOW_SIZES)
+{
+    ParticleSystem::ParticleID particle1_id = particle_system_.AddParticle(
+        sf::Vector2f(WINDOW_SIZES.x / 10.0f, WINDOW_SIZES.y / 10.0f),  // position
+        sf::Vector2f(0, 0),  // velocity
+        sf::Vector2f(0, 0),  // acceleration
+        25.0f,  // radius
+        520.0f  // mass
+    );
+
+    ParticleSystem::ParticleID particle2_id = particle_system_.AddParticle(
+        sf::Vector2f(WINDOW_SIZES.x / 8.0f, WINDOW_SIZES.y / 4.0f),  // position
+        sf::Vector2f(0, 0),  // velocity
+        sf::Vector2f(0, 0),  // acceleration
+        45.0f,  // radius
+        910.0f  // mass
+    );
+
+    ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
+        sf::Vector2f(WINDOW_SIZES.x / 1.2f, WINDOW_SIZES.y / 1.5f),  // position
+        sf::Vector2f(0, 0),  // velocity
+        sf::Vector2f(0, 0),  // acceleration
+        15.0f,  // radius
+        200.0f  // mass
+    );
+
+    particle_system_.AddLink(
+        particle1_id, particle2_id,
+        8000.0f  // stiffness
+    );
+
+    particle_system_.AddLink(
+        particle2_id, particle3_id,
+        5500.0f  // stiffness
+    );
+
+    particle_system_.AddLink(
+        particle1_id, particle3_id,
+        9500.0f  // stiffness
+    );
+}
+
+
+
+void Game::Run()
+{
+    const float updates_per_second = 60.0f;
+    const sf::Time time_per_update = sf::seconds(1.0f / updates_per_second);
+
+    sf::Clock clock;
+    sf::Time time_since_last_update = sf::Time::Zero;
+
+    while (!main_window_.CheckIsDone())
+    {
+        time_since_last_update += clock.restart();
+        while (time_since_last_update >= time_per_update)
+        {
+            HandleInput();
+            time_since_last_update -= time_per_update;
+            Update(time_per_update.asSeconds());
+        }
+
+        Render();
+    }
+}
+
+
+
+void Game::HandleInput()
+{
+    sf::Vector2f velocity(0, 0);
+    const float delta = 20.0f;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+    {
+        velocity.y -= delta;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+    {
+        velocity.x += delta;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+    {
+        velocity.y += delta;
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+    {
+        velocity.x -= delta;
+    }
+
+    particle_system_.Push(velocity);
+}
+
+
+
+void Game::Update(const float dt)
+{
+    main_window_.Update();
+
+    particle_system_.Update(dt);
+}
+
+
+
+void Game::Render()
+{
+    main_window_.BeginDraw();
+
+    main_window_.Draw(particle_system_);
+    // draw other objects here
+
+    main_window_.EndDraw();
+}
+
+
