@@ -106,13 +106,15 @@ ParticleSystem::ParticleID ParticleSystem::AddParticle(
 
 void ParticleSystem::AddLink(
     const ParticleID particle1_id, const ParticleID particle2_id,
-    const float stiffness, const float min_length)
+    const float stiffness)
 {
+    const float min_spring_length = 100.0f;
+
     links_.push_back(Link{
         particle1_id, particle2_id,
         GetDistance(particle1_id, particle2_id),
         stiffness,
-        min_length
+        min_spring_length
     });
 }
 
@@ -166,7 +168,7 @@ void ParticleSystem::Update(const float dt)
         particles_[i].Update(dt);
     }
 
-    HandleCollisionsBetweenParticles();
+    //HandleCollisionsBetweenParticles();
     HandleCollisionsWithWalls();
 }
 
@@ -207,28 +209,54 @@ void ParticleSystem::ApplyGravity()
 
 void ParticleSystem::SolveLinks()
 {
-    for (size_t i = 0; i < links_.size(); i++)
+    for (const Link& link : links_)
     {
-        Particle& particle1 = particles_[links_[i].particle1_id];
-        Particle& particle2 = particles_[links_[i].particle2_id];
+        Particle& particle1 = particles_[link.particle1_id];
+        Particle& particle2 = particles_[link.particle2_id];
         const sf::Vector2f distance_vector12 = (
             particle2.GetPosition() - particle1.GetPosition()
         );
         const float distance = ComputeLength(distance_vector12);
-        const float delta = distance - links_[i].intitial_distance;
-        const float force = links_[i].stiffness * delta;
+        const float delta = distance - link.intitial_distance;
+        const float force = link.stiffness * delta;
 
-        const sf::Vector2f unit_distance_vector12 = (
+        const sf::Vector2f unit_vector12 = (
             distance_vector12 / ComputeLength(distance_vector12)
         );
         const sf::Vector2f particle1_acceleration = (
-            unit_distance_vector12 * force / particle1.GetMass()
+            unit_vector12 * (force / particle1.GetMass())
         );
         const sf::Vector2f particle2_acceleration = (
-            -unit_distance_vector12 * force / particle2.GetMass()
+            -unit_vector12 * (force / particle2.GetMass())
         );
         particle1.acceleration_ += particle1_acceleration;
         particle2.acceleration_ += particle2_acceleration;
+
+        const float spring_length = (
+            distance - particle1.GetRadius() - particle2.GetRadius()
+        );
+        
+        if (spring_length < link.min_length)
+        {
+            particle1.velocity_ = sf::Vector2f(0, 0);
+            particle2.velocity_ = sf::Vector2f(0, 0);
+
+            const sf::Vector2f position_correction = (
+                unit_vector12 * (link.min_length - spring_length) / 2.0f
+            );
+            //std::cout << "==========================================\n";
+            //std::cout << "particle1 before: pos.x = " << particle1.GetPosition().x << "  pos.y = " << particle1.GetPosition().y << "  radius = " << particle1.GetRadius() << "\n";
+            //std::cout << "particle2 before: pos.x = " << particle2.GetPosition().x << "  pos.y = " << particle2.GetPosition().y << "  radius = " << particle2.GetRadius() << "\n";
+            //std::cout << "spring_length = " << spring_length << std::endl;
+            //std::cout << "correction: x = " << correction.x << "  y = " << correction.y << std::endl;
+
+            particle1.position_ += -position_correction;
+            particle2.position_ +=  position_correction;
+
+            //std::cout << "particle1 after: pos.x = " << particle1.GetPosition().x << "  pos.y = " << particle1.GetPosition().y << "  radius = " << particle1.GetRadius() << "\n";
+            //std::cout << "particle2 after: pos.x = " << particle2.GetPosition().x << "  pos.y = " << particle2.GetPosition().y << "  radius = " << particle2.GetRadius() << "\n";
+            //std::cout << "==========================================\n";
+        }
     }
 }
 
@@ -258,7 +286,7 @@ void ParticleSystem::HandleCollisionsBetweenParticles()
 
             const sf::Vector2f unit_vector_ij = vector_ij / distance;
             corrections[i] += -unit_vector_ij * (min_distance - distance) / 2.0f;
-            corrections[j] += unit_vector_ij * (min_distance - distance) / 2.0f;
+            corrections[j] +=  unit_vector_ij * (min_distance - distance) / 2.0f;
 
             /*std::cout << "========================================================\n";
             std::cout << "particle[i]: pos.x = " << particles_[i].GetPosition().x << "  pos.y = " << particles_[i].GetPosition().y << "  radius = " << particles_[i].GetRadius() << "\n";
@@ -288,10 +316,10 @@ void ParticleSystem::HandleCollisionsBetweenParticles()
 void ParticleSystem::HandleCollisionsWithWalls()
 {
     const float up_gap = 0.0f;
-    const float right_gap = 100.0f;
-    const float bottom_gap = 50.0f;
+    const float right_gap = 0.0f;
+    const float bottom_gap = 0.0f;
     const float left_gap = 0.0f;
-    const float velocity_reduce_factor = 1.41f;
+    const float velocity_reduce_factor = sqrt(2.0f);
 
     for (Particle& particle : particles_)
     {

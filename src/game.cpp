@@ -25,7 +25,7 @@ Game::Game()
         15000.0f  // mass
     );
 
-    /*ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
+    ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
         sf::Vector2f(400.0f, 100.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
@@ -39,31 +39,27 @@ Game::Game()
         sf::Vector2f(0, 0),  // acceleration
         25.0f,  // radius
         15000.0f  // mass
-    );*/
+    );
 
     particle_system_.AddLink(
         particle1_id, particle2_id,
-        1e5,  // stiffness
-        10.0f  // min_length
+        1e5  // stiffness
     );
 
-    /*particle_system_.AddLink(
+    particle_system_.AddLink(
         particle2_id, particle3_id,
-        1e5,  // stiffness
-        10.0f  // min_length
+        1e5  // stiffness
     );
 
     particle_system_.AddLink(
         particle3_id, particle4_id,
-        1e5,  // stiffness
-        10.0f  // min_length
+        1e5  // stiffness
     );
 
     particle_system_.AddLink(
         particle4_id, particle1_id,
-        1e5,  // stiffness
-        10.0f  // min_length
-    );*/
+        1e5  // stiffness
+    );
 }
 
 

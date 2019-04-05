@@ -57,7 +57,7 @@ public:
     );
     void AddLink(
         const ParticleID particle1_id, const ParticleID particle2_id,
-        const float stiffness, const float min_length
+        const float stiffness
     );
 
     const Particle& GetParticleByID(const ParticleID particle_id) const;
