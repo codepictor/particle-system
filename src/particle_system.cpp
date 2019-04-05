@@ -76,29 +76,6 @@ void Particle::Update(const float dt)
 {
     velocity_ += acceleration_ * dt;
     position_ += velocity_ * dt;
-
-    if (position_.x < radius_)
-    {
-        position_.x = radius_;
-        velocity_.x = -velocity_.x / 2.0f;
-    }
-    if (position_.x + radius_ > WINDOW_SIZES.x)
-    {
-        position_.x = WINDOW_SIZES.x - radius_;
-        velocity_.x = -velocity_.x / 2.0f;
-    }
-
-    if (position_.y < radius_)
-    {
-        position_.y = radius_;
-        velocity_.y = -velocity_.y / 2.0f;
-    }
-    const float bottom_gap = 50.0f;
-    if (position_.y + radius_ > WINDOW_SIZES.y - bottom_gap)
-    {
-        position_.y = WINDOW_SIZES.y - radius_ - bottom_gap;
-        velocity_.y = -velocity_.y / 2.0f;
-    }
 }
 
 
@@ -129,11 +106,13 @@ ParticleSystem::ParticleID ParticleSystem::AddParticle(
 
 void ParticleSystem::AddLink(
     const ParticleID particle1_id, const ParticleID particle2_id,
-    const float stiffness)
+    const float stiffness, const float min_length)
 {
     links_.push_back(Link{
         particle1_id, particle2_id,
-        GetDistance(particle1_id, particle2_id), stiffness
+        GetDistance(particle1_id, particle2_id),
+        stiffness,
+        min_length
     });
 }
 
@@ -142,7 +121,7 @@ void ParticleSystem::AddLink(
 const Particle& ParticleSystem::GetParticleByID(
     const ParticleID particle_id) const
 {
-    //assert(0 <= particle_id < particles_.size());
+    //assert(0 <= particle_id && particle_id < particles_.size());
     return particles_[particle_id];
 }
 
@@ -187,13 +166,25 @@ void ParticleSystem::Update(const float dt)
         particles_[i].Update(dt);
     }
 
-    HandleCollisions();
+    HandleCollisionsBetweenParticles();
+    HandleCollisionsWithWalls();
 }
 
 
 
 void ParticleSystem::Render(sf::RenderWindow& window)
 {
+    for (const Link& link : links_)
+    {
+        sf::Vertex spring[2] = {
+            sf::Vertex(GetParticleByID(link.particle1_id).GetPosition()),
+            sf::Vertex(GetParticleByID(link.particle2_id).GetPosition())
+        };
+        spring[0].color = sf::Color(64, 64, 64);
+        spring[1].color = sf::Color(64, 64, 64);
+        window.draw(spring, 2, sf::Lines);
+    }
+
     for (size_t i = 0; i < particles_.size(); i++)
     {
         particles_[i].Render(window);
@@ -243,38 +234,98 @@ void ParticleSystem::SolveLinks()
 
 
 
-void ParticleSystem::HandleCollisions()
+void ParticleSystem::HandleCollisionsBetweenParticles()
 {
+    std::vector<sf::Vector2f> corrections(
+        particles_.size(), sf::Vector2f(0, 0)
+    );
+
     for (size_t i = 0; i < particles_.size(); i++)
     {
         for (size_t j = 0; j < particles_.size(); j++)
         {
-            if (i != j)
+            const sf::Vector2f vector_ij = (
+                particles_[j].GetPosition() - particles_[i].GetPosition()
+            );
+            const float distance = ComputeLength(vector_ij);
+            const float min_distance = (
+                particles_[i].GetRadius() + particles_[j].GetRadius()
+            );
+            if (i >= j || distance >= min_distance)
             {
-                HandleCollisionBetween(particles_[i], particles_[j]);
+                continue;
             }
+
+            const sf::Vector2f unit_vector_ij = vector_ij / distance;
+            corrections[i] += -unit_vector_ij * (min_distance - distance) / 2.0f;
+            corrections[j] += unit_vector_ij * (min_distance - distance) / 2.0f;
+
+            /*std::cout << "========================================================\n";
+            std::cout << "particle[i]: pos.x = " << particles_[i].GetPosition().x << "  pos.y = " << particles_[i].GetPosition().y << "  radius = " << particles_[i].GetRadius() << "\n";
+            std::cout << "particle[j]: pos.x = " << particles_[j].GetPosition().x << "  pos.y = " << particles_[j].GetPosition().y << "  radius = " << particles_[j].GetRadius() << "\n";
+            std::cout << "min_distance - distance = " << min_distance - distance << std::endl;
+            std::cout << "i = " << i << " correction = " << corrections[i].y << std::endl;
+            std::cout << "j = " << j << " correction = " << corrections[j].y << std::endl;
+            std::cout << "========================================================\n";*/
+        }
+    }
+
+    for (size_t i = 0; i < particles_.size(); i++)
+    {
+        if (corrections[i] != sf::Vector2f(0, 0))
+        {
+            particles_[i].position_ += corrections[i];
+            const float abs_velocity = ComputeLength(particles_[i].velocity_);
+            particles_[i].velocity_ = abs_velocity * (
+                corrections[i] / ComputeLength(corrections[i])
+            );
         }
     }
 }
 
 
 
-void ParticleSystem::HandleCollisionBetween(
-    Particle& particle1, Particle& particle2)
+void ParticleSystem::HandleCollisionsWithWalls()
 {
-    const sf::Vector2f distance_vector12 = (
-        particle2.GetPosition() - particle1.GetPosition()
-    );
-    const float distance = ComputeLength(distance_vector12);
-    const float min_distance = particle1.GetRadius() + particle2.GetRadius();
-    if (distance >= min_distance)
+    const float up_gap = 0.0f;
+    const float right_gap = 100.0f;
+    const float bottom_gap = 50.0f;
+    const float left_gap = 0.0f;
+    const float velocity_reduce_factor = 1.41f;
+
+    for (Particle& particle : particles_)
     {
-        return;
-    }
+        const float left_border = left_gap;
+        if (particle.position_.x < particle.radius_ + left_border)
+        {
+            particle.position_.x = particle.radius_ + left_border;
+            particle.velocity_.x = -particle.velocity_.x /
+                                   velocity_reduce_factor;
+        }
 
-    const sf::Vector2f unit_distance_vector12 = distance_vector12 / distance;
-    particle1.position_ += -unit_distance_vector12 * (min_distance - distance);
-    particle2.position_ += unit_distance_vector12 * (min_distance - distance);
+        const float right_border = WINDOW_SIZES.x - right_gap;
+        if (particle.position_.x + particle.radius_ > right_border)
+        {
+            particle.position_.x = right_border - particle.radius_;
+            particle.velocity_.x = -particle.velocity_.x /
+                                   velocity_reduce_factor;
+        }
+
+        const float up_border = up_gap;
+        if (particle.position_.y < particle.radius_ + up_border)
+        {
+            particle.position_.y = particle.radius_ + up_border;
+            particle.velocity_.y = -particle.velocity_.y /
+                                   velocity_reduce_factor;
+        }
+
+        const float bottom_border = WINDOW_SIZES.y - bottom_gap;
+        if (particle.position_.y + particle.radius_ > bottom_border)
+        {
+            particle.position_.y = bottom_border - particle.radius_;
+            particle.velocity_.y = -particle.velocity_.y /
+                                   velocity_reduce_factor;
+        }
+    }   
 }
-
 

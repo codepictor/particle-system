@@ -57,7 +57,7 @@ public:
     );
     void AddLink(
         const ParticleID particle1_id, const ParticleID particle2_id,
-        const float stiffness
+        const float stiffness, const float min_length
     );
 
     const Particle& GetParticleByID(const ParticleID particle_id) const;
@@ -78,13 +78,14 @@ private:
         ParticleID particle2_id;
         float intitial_distance;
         float stiffness;
+        float min_length;
     };
 
     void SolveLinks();
     void ApplyGravity();
 
-    void HandleCollisions();
-    void HandleCollisionBetween(Particle& particle1, Particle& particle2);
+    void HandleCollisionsBetweenParticles();
+    void HandleCollisionsWithWalls();
 
     std::vector<Particle> particles_;
     std::vector<Link> links_;

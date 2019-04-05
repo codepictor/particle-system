@@ -10,7 +10,7 @@ Game::Game()
     : main_window_("Particle system", WINDOW_SIZES)
 {
     ParticleSystem::ParticleID particle1_id = particle_system_.AddParticle(
-        sf::Vector2f(50.0f, 450.0f),  // position
+        sf::Vector2f(100.0f, 100.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
         25.0f,  // radius
@@ -18,6 +18,14 @@ Game::Game()
     );
 
     ParticleSystem::ParticleID particle2_id = particle_system_.AddParticle(
+        sf::Vector2f(100.0f, 400.0f),  // position
+        sf::Vector2f(0, 0),  // velocity
+        sf::Vector2f(0, 0),  // acceleration
+        25.0f,  // radius
+        15000.0f  // mass
+    );
+
+    /*ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
         sf::Vector2f(400.0f, 100.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
@@ -25,28 +33,37 @@ Game::Game()
         15000.0f  // mass
     );
 
-    ParticleSystem::ParticleID particle3_id = particle_system_.AddParticle(
-        sf::Vector2f(750.0f, 450.0f),  // position
+    ParticleSystem::ParticleID particle4_id = particle_system_.AddParticle(
+        sf::Vector2f(400.0f, 400.0f),  // position
         sf::Vector2f(0, 0),  // velocity
         sf::Vector2f(0, 0),  // acceleration
         25.0f,  // radius
         15000.0f  // mass
-    );
+    );*/
 
     particle_system_.AddLink(
         particle1_id, particle2_id,
-        1e6  // stiffness
+        1e5,  // stiffness
+        10.0f  // min_length
     );
 
-    particle_system_.AddLink(
+    /*particle_system_.AddLink(
         particle2_id, particle3_id,
-        1e6  // stiffness
+        1e5,  // stiffness
+        10.0f  // min_length
     );
 
     particle_system_.AddLink(
-        particle1_id, particle3_id,
-        1e6  // stiffness
+        particle3_id, particle4_id,
+        1e5,  // stiffness
+        10.0f  // min_length
     );
+
+    particle_system_.AddLink(
+        particle4_id, particle1_id,
+        1e5,  // stiffness
+        10.0f  // min_length
+    );*/
 }
 
 
