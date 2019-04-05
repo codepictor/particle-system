@@ -60,6 +60,16 @@ Game::Game()
         particle4_id, particle1_id,
         1e5  // stiffness
     );
+
+    particle_system_.AddLink(
+        particle1_id, particle3_id,
+        1e5  // stiffness
+    );
+
+    particle_system_.AddLink(
+        particle4_id, particle2_id,
+        1e5  // stiffness
+    );
 }
 
 
