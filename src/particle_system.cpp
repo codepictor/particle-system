@@ -176,7 +176,7 @@ void ParticleSystem::Update(const float dt)
 
 void ParticleSystem::Render(sf::RenderWindow& window)
 {
-    const float normal_spring_width = 8.0f;
+    const float normal_spring_width = 10.0f;
     sf::VertexArray spring(sf::Quads, 4);
 
     for (const Link& link : links_)
@@ -257,8 +257,13 @@ void ParticleSystem::SolveLinks()
 
         if (spring_length < link.min_length)
         {
-            particle1.velocity_ = utils::Reflect(particle1.GetVelocity(), -distance_vector12);
-            particle2.velocity_ = utils::Reflect(particle2.GetVelocity(), distance_vector12);
+            const float velocity_reduce_factor = sqrt(2.0f);
+            particle1.velocity_ = utils::Reflect(
+                particle1.GetVelocity(), -distance_vector12
+            ) / velocity_reduce_factor;
+            particle2.velocity_ = utils::Reflect(
+                particle2.GetVelocity(), distance_vector12
+            ) / velocity_reduce_factor;
 
             const sf::Vector2f position_correction = (
                 unit_vector12 * (link.min_length - spring_length) / 2.0f
