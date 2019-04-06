@@ -83,9 +83,18 @@ private:
 
     void SolveLinks();
     void ApplyGravity();
-
     void HandleCollisionsBetweenParticles();
     void HandleCollisionsWithWalls();
+
+    struct SolvedCollisionInfo
+    {
+        sf::Vector2f particle1_new_velocity;
+        sf::Vector2f particle2_new_velocity;
+    };
+
+    SolvedCollisionInfo SolveCollisionBetween(
+        const Particle& particle1, const Particle& particle2
+    ) const;
 
     std::vector<Particle> particles_;
     std::vector<Link> links_;

@@ -168,7 +168,7 @@ void ParticleSystem::Update(const float dt)
         particle.Update(dt);
     }
 
-    //HandleCollisionsBetweenParticles();
+    HandleCollisionsBetweenParticles();
     HandleCollisionsWithWalls();
 }
 
@@ -278,7 +278,8 @@ void ParticleSystem::SolveLinks()
 
 void ParticleSystem::HandleCollisionsBetweenParticles()
 {
-    std::vector<sf::Vector2f> corrections(
+    std::vector<bool> is_velocity_updated(particles_.size(), false);
+    std::vector<sf::Vector2f> new_velocities(
         particles_.size(), sf::Vector2f(0, 0)
     );
 
@@ -298,35 +299,42 @@ void ParticleSystem::HandleCollisionsBetweenParticles()
                 continue;
             }
 
-            const sf::Vector2f unit_vector_ij = vector_ij / distance;
-            corrections[i] += -unit_vector_ij * (min_distance - distance) / 2.0f;
-            corrections[j] +=  unit_vector_ij * (min_distance - distance) / 2.0f;
+            const auto solved_collision_info = SolveCollisionBetween(
+                particles_[i], particles_[j]
+            );
+            new_velocities[i] += solved_collision_info.particle1_new_velocity;
+            new_velocities[j] += solved_collision_info.particle2_new_velocity;
+            is_velocity_updated[i] = true;
+            is_velocity_updated[j] = true;
         }
     }
 
     for (size_t i = 0; i < particles_.size(); i++)
     {
-        if (corrections[i] != sf::Vector2f(0, 0))
+        if (is_velocity_updated[i])
         {
-            particles_[i].position_ += corrections[i];
-            const float abs_velocity = utils::ComputeLength(
-                particles_[i].GetVelocity()
-            );
-            particles_[i].velocity_ = abs_velocity * (
-                corrections[i] / utils::ComputeLength(corrections[i])
-            );
+            //particles_[i].velocity_ = new_velocities[i];
         }
     }
 }
 
 
 
+ParticleSystem::SolvedCollisionInfo ParticleSystem::SolveCollisionBetween(
+    const Particle& particle1, const Particle& particle2) const
+{
+    // TODO: solve collision equations between two particles
+    return {particle1.GetVelocity(), particle2.GetVelocity()};
+}
+
+
+
 void ParticleSystem::HandleCollisionsWithWalls()
 {
-    const float left_border = 10.0f;
-    const float right_border = WINDOW_SIZES.x - 10.0f;
-    const float up_border = 10.0f;
-    const float bottom_border = WINDOW_SIZES.y - 10.0f;
+    const float left_border = 0.0f;
+    const float right_border = WINDOW_SIZES.x - 0.0f;
+    const float up_border = 0.0f;
+    const float bottom_border = WINDOW_SIZES.y - 0.0f;
     const float velocity_reduce_factor = sqrt(2.0f);
 
     for (Particle& particle : particles_)
