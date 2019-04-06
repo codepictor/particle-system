@@ -108,7 +108,7 @@ void ParticleSystem::AddLink(
     const ParticleID particle1_id, const ParticleID particle2_id,
     const float stiffness)
 {
-    const float min_spring_length = 100.0f;
+    const float min_spring_length = 20.0f;
 
     links_.push_back(Link{
         particle1_id, particle2_id,
@@ -176,7 +176,7 @@ void ParticleSystem::Update(const float dt)
 
 void ParticleSystem::Render(sf::RenderWindow& window)
 {
-    const float normal_spring_width = 10.0f;
+    const float max_spring_width = 18.0f;
     sf::VertexArray spring(sf::Quads, 4);
 
     for (const Link& link : links_)
@@ -189,8 +189,8 @@ void ParticleSystem::Render(sf::RenderWindow& window)
         const float spring_length = (utils::ComputeLength(distance_vector12)
             - particle1.GetRadius() - particle2.GetRadius()
         );
-        const float spring_width = (
-            normal_spring_width * link.intitial_distance / spring_length
+        const float spring_width = (max_spring_width
+            * 10.0f / (9.0f + spring_length / link.min_length)
         );
         const sf::Vector2f ort_unit_vector = (
             utils::GetOrthogonalVector(distance_vector12) /
@@ -201,14 +201,12 @@ void ParticleSystem::Render(sf::RenderWindow& window)
         spring[2].position = center2 - ort_unit_vector * spring_width / 2.0f;
         spring[3].position = center2 + ort_unit_vector * spring_width / 2.0f;
 
-        const sf::Color spring_color(
-            sf::Uint8(32 * (spring_width / normal_spring_width)) % 256,
-            32, 32
-        );
-        spring[0].color = spring_color;
-        spring[1].color = spring_color;
-        spring[2].color = spring_color;
-        spring[3].color = spring_color;
+        const float stretch = spring_length / link.min_length;
+        const float red_color = stretch < 16.0f ? stretch * 16.0f : 255.0f;
+        spring[0].color = sf::Color(sf::Uint8(red_color), 96, 0);
+        spring[1].color = sf::Color(sf::Uint8(red_color), 96, 0);
+        spring[2].color = sf::Color(sf::Uint8(red_color), 96, 0);
+        spring[3].color = sf::Color(sf::Uint8(red_color), 96, 0);
 
         window.draw(spring);
     }
