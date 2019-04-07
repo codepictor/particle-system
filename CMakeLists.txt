@@ -6,7 +6,9 @@ project(particle-system VERSION 0.1 DESCRIPTION "simple prototype of a particle 
 set(CMAKE_CXX_STANDARD 11)
 
 # Choose dynamic or static linking of SFML
-option(SFML_STATIC_LIBRARIES "Build the executable with static linking" OFF)
+if(WIN32)
+    option(SFML_STATIC_LIBRARIES "Build the executable with static linking" OFF)
+endif(WIN32)
 
 # Find SFML library
 find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
@@ -25,3 +27,4 @@ target_include_directories(particle-system PUBLIC include)
 
 # Linking
 target_link_libraries(particle-system sfml-graphics sfml-window sfml-system)
+
