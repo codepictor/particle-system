@@ -13,15 +13,14 @@ public:
     Window(const std::string& title, const sf::Vector2u& size);
     virtual ~Window();
 
+    bool CheckIsDone();
+
     void Update();
     void BeginDraw();
     void Draw(sf::Drawable& drawable_object);
     void Draw(Particle& particle);
     void Draw(ParticleSystem& particle_system);
     void EndDraw();
-
-    bool CheckIsDone();
-    sf::Vector2u GetWindowSize();
     
 
 private:

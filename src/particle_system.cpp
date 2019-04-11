@@ -123,7 +123,7 @@ void ParticleSystem::AddLink(
 const Particle& ParticleSystem::GetParticleByID(
     const ParticleID particle_id) const
 {
-    //assert(0 <= particle_id && particle_id < particles_.size());
+    // assert(0 <= particle_id && particle_id < particles_.size());
     return particles_[particle_id];
 }
 
@@ -143,11 +143,11 @@ float ParticleSystem::GetDistance(
 
 
 
-void ParticleSystem::Push(const sf::Vector2f velocity)
+void ParticleSystem::Push(const sf::Vector2f delta_velocity)
 {
     for (Particle& particle : particles_)
     {
-        particle.Push(velocity);
+        particle.Push(delta_velocity);
     }
 }
 
@@ -222,7 +222,6 @@ void ParticleSystem::Render(sf::RenderWindow& window)
 void ParticleSystem::ApplyGravity()
 {
     const sf::Vector2f acceleration_g(0, 980.0f);
-
     for (Particle& particle : particles_)
     {
         particle.acceleration_ += acceleration_g;
@@ -307,13 +306,13 @@ void ParticleSystem::HandleCollisionsBetweenParticles()
         }
     }
 
-    for (size_t i = 0; i < particles_.size(); i++)
-    {
-        if (is_velocity_updated[i])
-        {
-            //particles_[i].velocity_ = new_velocities[i];
-        }
-    }
+    // for (size_t i = 0; i < particles_.size(); i++)
+    // {
+    //     if (is_velocity_updated[i])
+    //     {
+    //         particles_[i].velocity_ = new_velocities[i];
+    //     }
+    // }
 }
 
 
@@ -337,7 +336,6 @@ void ParticleSystem::HandleCollisionsWithWalls()
 
     for (Particle& particle : particles_)
     {
-        
         if (particle.position_.x < particle.radius_ + left_border)
         {
             particle.position_.x = particle.radius_ + left_border;

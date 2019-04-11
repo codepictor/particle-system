@@ -17,7 +17,7 @@ public:
     void Update(const float dt);
     void Render();
 
-    int abc = 19;
+
 private:
     ParticleSystem particle_system_;
 

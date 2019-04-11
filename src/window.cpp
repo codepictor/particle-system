@@ -88,13 +88,6 @@ bool Window::CheckIsDone()
 
 
 
-sf::Vector2u Window::GetWindowSize()
-{
-    return window_.getSize();
-}
-
-
-
 void Window::Create()
 {
     window_.create(
