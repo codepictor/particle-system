@@ -100,30 +100,30 @@ void Game::Run()
 
 void Game::HandleInput()
 {
-    sf::Vector2f delta_velocity(0, 0);
-    const float delta = 20.0f;
+    sf::Vector2f force(0, 0);
+    const float delta = 2e7f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
-        delta_velocity.y -= delta;
+        force.y -= delta;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
     {
-        delta_velocity.x += delta;
+        force.x += delta;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
     {
-        delta_velocity.y += delta;
+        force.y += delta;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
     {
-        delta_velocity.x -= delta;
+        force.x -= delta;
     }
 
-    particle_system_.Push(delta_velocity);
+    particle_system_.Push(force);
 }
 
 

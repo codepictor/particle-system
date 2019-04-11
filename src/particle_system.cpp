@@ -30,9 +30,9 @@ Particle::Particle(
 
 
 
-void Particle::Push(const sf::Vector2f delta_velocity)
+void Particle::Push(const sf::Vector2f force)
 {
-    velocity_ += delta_velocity;
+    acceleration_ += force / mass_;
 }
 
 
@@ -143,11 +143,11 @@ float ParticleSystem::GetDistance(
 
 
 
-void ParticleSystem::Push(const sf::Vector2f delta_velocity)
+void ParticleSystem::Push(const sf::Vector2f force)
 {
     for (Particle& particle : particles_)
     {
-        particle.Push(delta_velocity);
+        particle.Push(force);
     }
 }
 
@@ -155,17 +155,13 @@ void ParticleSystem::Push(const sf::Vector2f delta_velocity)
 
 void ParticleSystem::Update(const float dt)
 {
-    for (Particle& particle : particles_)
-    {
-        particle.acceleration_ = sf::Vector2f(0, 0);
-    }
-
     SolveLinks();
     ApplyGravity();
 
     for (Particle& particle : particles_)
     {
         particle.Update(dt);
+        particle.acceleration_ = sf::Vector2f(0.0f, 0.0f);
     }
 
     HandleCollisionsBetweenParticles();

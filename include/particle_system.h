@@ -24,7 +24,7 @@ public:
     float GetRadius() const;
     float GetMass() const;
 
-    void Push(const sf::Vector2f delta_velocity);
+    void Push(const sf::Vector2f force);
 
     void Update(const float dt);
     void Render(sf::RenderWindow& window);
@@ -65,7 +65,7 @@ public:
         const ParticleID particle1_id, const ParticleID particle2_id
     ) const;
 
-    void Push(const sf::Vector2f delta_velocity);
+    void Push(const sf::Vector2f force);
 
     void Update(const float dt);
     void Render(sf::RenderWindow& window);
