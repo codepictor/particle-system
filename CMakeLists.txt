@@ -5,13 +5,13 @@ project(particle-system VERSION 0.1 DESCRIPTION "simple prototype of a particle 
 # Use C++11 standard for compiling
 set(CMAKE_CXX_STANDARD 11)
 
+# Find SFML library
+find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
+
 # Choose dynamic or static linking of SFML
 if(WIN32)
     option(SFML_STATIC_LIBRARIES "Build the executable with static linking" OFF)
 endif(WIN32)
-
-# Find SFML library
-find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Bring source files in src/ directory into the project
 set(SOURCE_FILES src/main.cpp src/game.cpp src/particle_system.cpp src/utils.cpp src/window.cpp)
